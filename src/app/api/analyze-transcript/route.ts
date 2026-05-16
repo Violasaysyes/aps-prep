@@ -193,16 +193,22 @@ function generateFallbackAnalysis(text: string, major: string) {
           credits: 3,
           risk: "medium" as const,
           reason: "专业入门课程，考官可能用来暖场",
+          summary: `This introductory course covers the foundational principles of ${major}. Topics include core theoretical frameworks, key methodologies, and an overview of the field's major themes. Students are assessed through weekly assignments, a mid-term exam, and a final written examination.`,
           questions: [
             "请介绍一下这门课的主要内容",
             "你为什么选择这个专业方向？",
+          ],
+          answers: [
+            `This course introduced the foundational concepts and theoretical frameworks of ${major}. We studied core principles through lectures, readings, and practical assignments.`,
+            `I chose this major because I am passionate about the field and see strong career opportunities in Germany. The structured curriculum here prepared me well for further study abroad.`,
           ],
         },
       ],
     });
   }
 
-  const mustReview = semesters
+  type FallbackCourse = { name: string; nameEn: string; grade: number; credits: number; risk: "high" | "medium" | "low"; reason: string; summary: string; questions: string[]; answers: string[] };
+  const mustReview = (semesters as Array<{ name: string; courses: FallbackCourse[] }>)
     .flatMap((s) => s.courses)
     .filter((c) => c.risk === "high")
     .map((c) => c.name);
