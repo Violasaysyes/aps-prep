@@ -99,17 +99,34 @@ export default function TipsPage() {
               <h2 className="text-xl font-black">面试地点与交通</h2>
             </div>
             <div className="grid md:grid-cols-3 gap-3">
-              {[
-                { city: "北京", addr: "朝阳区东方东路19号\nDRC外交办公大楼 D1-1302", metro: "地铁10号线亮马桥站 步行10分钟" },
-                { city: "上海", addr: "黄浦区南京西路338号\n天安中心", metro: "地铁2/12/13号线南京西路站" },
-                { city: "广州", addr: "天河区天河路208号\n粤海天河城大厦", metro: "地铁1/3号线体育西路站" },
-              ].map((loc) => (
-                <div key={loc.city} className="bg-background border border-border rounded-2xl p-5">
-                  <div className="text-lg font-black mb-2">{loc.city}</div>
-                  <p className="text-sm text-muted leading-relaxed whitespace-pre-line mb-3">{loc.addr}</p>
-                  <p className="text-xs text-muted font-medium">{loc.metro}</p>
+              {/* 北京 — 推荐 */}
+              <div className="bg-lime/10 border-2 border-lime/40 rounded-2xl p-5 relative">
+                <div className="absolute top-3 right-3 text-[10px] font-black bg-lime/30 text-foreground px-2 py-0.5 rounded-full uppercase tracking-wide">最推荐</div>
+                <div className="text-lg font-black mb-1">北京</div>
+                <p className="text-sm text-muted leading-relaxed whitespace-pre-line mb-3">朝阳区东方东路19号{"\n"}DRC外交办公大楼 D1-1302</p>
+                <p className="text-xs text-muted font-medium mb-3">地铁10号线亮马桥站 步行10分钟</p>
+                <p className="text-xs font-semibold text-foreground/70">全国考生均可报名 · 场次最多、等待最短，首选这里。</p>
+              </div>
+              {/* 上海 — 限制 */}
+              <div className="bg-background border border-border rounded-2xl p-5 relative">
+                <div className="absolute top-3 right-3 text-[10px] font-black bg-coral/15 text-coral px-2 py-0.5 rounded-full uppercase tracking-wide">有限制</div>
+                <div className="text-lg font-black mb-1">上海</div>
+                <p className="text-sm text-muted leading-relaxed whitespace-pre-line mb-3">黄浦区南京西路338号{"\n"}天安中心</p>
+                <p className="text-xs text-muted font-medium mb-3">地铁2/12/13号线南京西路站</p>
+                <div className="bg-coral/10 border border-coral/20 rounded-xl px-3 py-2">
+                  <p className="text-xs font-semibold text-coral">⚠ 仅限江苏、浙江、上海、安徽常住居民报名，非以上省份请选北京。</p>
                 </div>
-              ))}
+              </div>
+              {/* 广州 — 等待 */}
+              <div className="bg-background border border-border rounded-2xl p-5 relative">
+                <div className="absolute top-3 right-3 text-[10px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-wide">场次少</div>
+                <div className="text-lg font-black mb-1">广州</div>
+                <p className="text-sm text-muted leading-relaxed whitespace-pre-line mb-3">天河区天河路208号{"\n"}粤海天河城大厦</p>
+                <p className="text-xs text-muted font-medium mb-3">地铁1/3号线体育西路站</p>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                  <p className="text-xs font-semibold text-amber-700">⚠ 每年仅开考 1–2 次，等待时间可能较长，建议提前关注官网通知。</p>
+                </div>
+              </div>
             </div>
             <div className="mt-4 bg-background border border-border rounded-2xl px-5 py-3">
               <p className="text-sm font-medium text-muted">建议提前30分钟到达 · 进入面试区域前电子设备须完全关机</p>
