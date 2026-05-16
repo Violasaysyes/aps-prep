@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 const PERKS = [
   { icon: "AI", color: "bg-accent/15 text-accent", label: "AI成绩单分析" },
-  { icon: "↔", color: "bg-lime/30 text-foreground", label: "Swipe刷课系统" },
+  { icon: "↔", color: "bg-lime text-black", label: "Swipe刷课系统" },
   { icon: "1:1", color: "bg-coral/15 text-coral", label: "Mock面试预约" },
   { icon: "GG", color: "bg-sky/20 text-sky", label: "趣味成就系统" },
 ];
