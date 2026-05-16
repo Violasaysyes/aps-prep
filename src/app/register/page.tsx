@@ -88,7 +88,7 @@ export default function RegisterPage() {
           <div className="space-y-3">
             {PERKS.map((p) => (
               <div key={p.label} className="flex items-center gap-3">
-                <div className={`w-9 h-9 ${p.color} bg-white/5 rounded-xl flex items-center justify-center text-xs font-black`}>
+                <div className={`w-9 h-9 ${p.color} rounded-xl flex items-center justify-center text-xs font-black`}>
                   {p.icon}
                 </div>
                 <span className="text-background/70 text-sm font-medium">{p.label}</span>
