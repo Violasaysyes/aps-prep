@@ -1,0 +1,44 @@
+// Prisma Schema — APSlay
+// Dev: SQLite (零配置)
+// Prod: 切换到 PostgreSQL，改 provider + DATABASE_URL 即可
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  tier      String   @default("none") // "none" | "basic" | "pro" | "max"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  analyses Analysis[]
+  payments Payment[]
+}
+
+model Analysis {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fileName  String?
+  result    Json
+  createdAt DateTime @default(now())
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier      String
+  amount    Float
+  status    String   @default("pending") // "pending" | "confirmed"
+  note      String?
+  createdAt DateTime @default(now())
+}
