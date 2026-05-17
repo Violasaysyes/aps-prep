@@ -20,11 +20,10 @@ export async function POST(request: NextRequest) {
 
     const fileName = file.name.toLowerCase();
     if (fileName.endsWith(".pdf")) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
-      const { PDFParse } = require("pdf-parse") as any;
-      const parser = new PDFParse({ data: buffer });
-      const textResult = await parser.getText();
-      textContent = (textResult.pages as Array<{ text: string }>).map((p) => p.text).join("\n");
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const pdfParse = require("pdf-parse");
+      const data = await pdfParse(buffer);
+      textContent = data.text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
       const mammoth = await import("mammoth");
       const result = await mammoth.extractRawText({ buffer });
