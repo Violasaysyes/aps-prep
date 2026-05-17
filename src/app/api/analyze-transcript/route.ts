@@ -8,12 +8,13 @@ export async function POST(request: NextRequest) {
     const university = formData.get("university") as string;
     const examLang = formData.get("examLang") as string;
 
-    if (!file || !major) {
+    if (!file) {
       return NextResponse.json(
-        { error: "请上传成绩单并选择专业" },
+        { error: "请上传成绩单" },
         { status: 400 }
       );
     }
+    const majorLabel = major || "未知专业";
 
     const buffer = Buffer.from(await file.arrayBuffer());
     let textContent = "";
@@ -25,7 +26,8 @@ export async function POST(request: NextRequest) {
       const data = await pdfParse(buffer);
       textContent = data.text;
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
-      const mammoth = await import("mammoth");
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mammoth = require("mammoth");
       const result = await mammoth.extractRawText({ buffer });
       textContent = result.value;
     } else {
@@ -44,12 +46,12 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
-      return NextResponse.json(generateFallbackAnalysis(textContent, major));
+      return NextResponse.json(generateFallbackAnalysis(textContent, majorLabel));
     }
 
     const prompt = `你是一位资深APS面试辅导专家。请分析以下学生的成绩单，判断每门课程在APS面试中被考官提问的风险等级。
 
-学生专业：${major}
+学生专业：${majorLabel}
 目标大学：${university || "未指定"}
 面试语言：${examLang === "german" ? "德语" : "英语"}
 

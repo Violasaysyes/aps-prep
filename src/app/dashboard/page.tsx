@@ -373,7 +373,6 @@ export default function DashboardPage() {
 
   const handleAnalyze = async () => {
     if (!file) { setError("请先上传成绩单"); return; }
-    if (!major) { setError("请选择专业方向"); return; }
     setLoading(true);
     setError("");
     try {
@@ -666,7 +665,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <button
                 onClick={handleAnalyze}
-                disabled={loading || !file || !major}
+                disabled={loading || !file}
                 className="bg-foreground text-background px-6 py-3 rounded-2xl text-sm font-bold hover:opacity-90 transition disabled:opacity-40 active:scale-95"
               >
                 {loading ? (
