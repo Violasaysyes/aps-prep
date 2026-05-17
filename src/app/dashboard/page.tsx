@@ -785,17 +785,17 @@ export default function DashboardPage() {
             {remainingCourses.length > 0 ? (
               <div>
                 <div className="relative h-[560px]">
-                  <AnimatePresence>
-                    {remainingCourses.slice(0, 2).reverse().map((course, i) => (
+                  <AnimatePresence mode="wait">
+                    {remainingCourses[0] && (
                       <SwipeCard
-                        key={course.id}
-                        course={course}
-                        isTop={i === (Math.min(remainingCourses.length, 2) - 1)}
-                        onSwipe={(dir) => handleSwipe(course.id, dir)}
+                        key={remainingCourses[0].id}
+                        course={remainingCourses[0]}
+                        isTop={true}
+                        onSwipe={(dir) => handleSwipe(remainingCourses[0].id, dir)}
                         tier={tier}
                         onUpgrade={(target) => openUpgrade(target)}
                       />
-                    ))}
+                    )}
                   </AnimatePresence>
                 </div>
                 <SwipeButtons onSwipe={(dir) => handleSwipe(remainingCourses[0].id, dir)} />
