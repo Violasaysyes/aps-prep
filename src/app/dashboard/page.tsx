@@ -465,15 +465,16 @@ export default function DashboardPage() {
           <Link href="/" className="text-xl font-extrabold tracking-tight">
             AP<span className="text-accent">Slay</span>
           </Link>
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center gap-2 text-sm">
             {tier !== "none" && (
-              <span className="bg-lime/20 text-foreground text-xs font-bold px-3 py-1.5 rounded-full capitalize">
+              <span className="bg-lime/20 text-foreground text-xs font-bold px-2.5 py-1.5 rounded-full capitalize">
                 {tier === "basic" ? "Basic" : tier === "pro" ? "Pro" : "Max"} ✓
               </span>
             )}
-            <Link href="/tips" className="text-muted hover:text-foreground transition hidden sm:block">APS攻略</Link>
-            <Link href="/mock-interview" className="bg-foreground text-background px-4 py-2 rounded-full font-semibold hover:opacity-90 transition text-xs">
-              Mock面试 ¥300
+            <Link href="/tips" className="text-muted hover:text-foreground transition text-xs font-medium px-2">APS攻略</Link>
+            <Link href="/mock-interview" className="text-muted hover:text-foreground transition text-xs font-medium px-2">Mock面试</Link>
+            <Link href="/" className="bg-foreground text-background px-3.5 py-2 rounded-full font-semibold hover:opacity-90 transition text-xs">
+              首页
             </Link>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { UserProgressWidget } from "@/components/UserProgressWidget";
 
 /* ─── Navbar ─── */
 function Navbar() {
@@ -581,6 +582,7 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
+        <UserProgressWidget />
         <BrandStory />
         <MockInterviewBanner />
         <Features />
