@@ -21,15 +21,26 @@ export async function POST(request: NextRequest) {
 
     const fileName = file.name.toLowerCase();
     if (fileName.endsWith(".pdf")) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const pdfParse = require("pdf-parse");
-      const data = await pdfParse(buffer);
-      textContent = data.text;
+      try {
+        // Use lib path directly to avoid pdf-parse loading test files (Vercel bug)
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const pdfParse = require("pdf-parse/lib/pdf-parse.js");
+        const data = await pdfParse(buffer);
+        textContent = data.text;
+      } catch (e) {
+        console.error("PDF parse error:", e);
+        throw new Error(`PDF解析失败: ${e instanceof Error ? e.message : String(e)}`);
+      }
     } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const mammoth = require("mammoth");
-      const result = await mammoth.extractRawText({ buffer });
-      textContent = result.value;
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const mammoth = require("mammoth");
+        const result = await mammoth.extractRawText({ buffer });
+        textContent = result.value;
+      } catch (e) {
+        console.error("Word parse error:", e);
+        throw new Error(`Word解析失败: ${e instanceof Error ? e.message : String(e)}`);
+      }
     } else {
       return NextResponse.json(
         { error: "不支持的文件格式，请上传PDF或Word文件" },
@@ -124,8 +135,9 @@ ${textContent.substring(0, 4000)}
     return NextResponse.json(analysis);
   } catch (error) {
     console.error("Analyze transcript error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: "分析失败，请重试" },
+      { error: msg || "分析失败，请重试" },
       { status: 500 }
     );
   }
