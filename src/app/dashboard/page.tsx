@@ -382,7 +382,10 @@ export default function DashboardPage() {
       formData.append("university", university);
       formData.append("examLang", examLang);
       const res = await fetch("/api/analyze-transcript", { method: "POST", body: formData });
-      if (!res.ok) throw new Error("分析失败，请重试");
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `服务器错误 ${res.status}`);
+      }
       const data = await res.json();
       const withIds: AnalysisResult = {
         ...data,
