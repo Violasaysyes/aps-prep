@@ -457,7 +457,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Steps */}
-        <div className="flex items-center gap-3 mb-10 overflow-x-auto pb-1">
+        <div className="flex items-center gap-3 overflow-x-auto pb-1">
           <StepBadge num="01" label="选专业" active={!step1Done} done={step1Done} />
           <div className="flex-1 h-px bg-border min-w-[16px]" />
           <StepBadge num="02" label="生成介绍" active={step1Done && !step2Done} done={step2Done} />
@@ -466,6 +466,19 @@ export default function DashboardPage() {
           <div className="flex-1 h-px bg-border min-w-[16px]" />
           <StepBadge num="04" label="Swipe刷课" active={step3Done && !step4Done} done={step4Done} />
         </div>
+
+        {/* Skip banner */}
+        {!analysis && (
+          <div className="flex items-center justify-between bg-card border-2 border-border rounded-2xl px-5 py-3 my-5">
+            <p className="text-sm text-muted">想先看看效果？跳过设置，稍后随时回来填。</p>
+            <button
+              onClick={handleLoadSample}
+              className="shrink-0 text-sm font-bold bg-foreground text-background px-4 py-2 rounded-xl hover:opacity-80 transition active:scale-95 ml-4"
+            >
+              跳过，稍后再来 →
+            </button>
+          </div>
+        )}
 
         {/* ─── Step 1: 专业 & 院校 ─── */}
         <section className="mb-5 bg-card rounded-3xl border-2 border-border overflow-hidden">
