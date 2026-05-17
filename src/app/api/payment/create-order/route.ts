@@ -18,7 +18,11 @@ function buildSign(params: Record<string, string>, key: string): string {
 }
 
 const PRICE: Record<string, string> = { basic: "29.00", pro: "59.00", max: "99.00" };
-const NAME: Record<string, string> = { basic: "APSlay Basic", pro: "APSlay Pro", max: "APSlay Max" };
+const NAME: Record<string, string> = {
+  basic: "APSlay Basic会员",
+  pro: "APSlay Pro会员",
+  max: "APSlay Max会员",
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,14 +40,14 @@ export async function POST(request: NextRequest) {
 
     const pid = process.env.ZPAY_PID;
     const key = process.env.ZPAY_KEY;
-    const domain = process.env.ZPAY_DOMAIN; // e.g. https://zpay.example.com
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+    const domain = process.env.ZPAY_DOMAIN || "https://zpayz.cn";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "https://apslay.com";
 
-    if (!pid || !key || !domain) {
+    if (!pid || !key) {
       return NextResponse.json({ mockMode: true, tier });
     }
 
-    const out_trade_no = `aps_${Date.now()}_${randomBytes(4).toString("hex")}`;
+    const out_trade_no = `aps${Date.now()}${randomBytes(3).toString("hex")}`;
 
     await prisma.payment.create({
       data: {
@@ -58,25 +62,50 @@ export async function POST(request: NextRequest) {
     const notify_url = `${baseUrl}/api/webhook/zpay`;
     const return_url = `${baseUrl}/dashboard`;
     const param = `${payload.userId}:${tier}:${out_trade_no}`;
+    // Get user IP for Zpay MAPI requirement
+    const clientip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "127.0.0.1";
 
     const params: Record<string, string> = {
       pid,
       type: "alipay",
       out_trade_no,
       notify_url,
-      return_url,
       name: NAME[tier],
       money: PRICE[tier],
+      clientip,
       param,
     };
 
     const sign = buildSign(params, key);
-    const qs = new URLSearchParams({ ...params, sign, sign_type: "MD5" }).toString();
-    const paymentUrl = `${domain}/submit.php?${qs}`;
 
-    return NextResponse.json({ paymentUrl, out_trade_no, amount: PRICE[tier], tier });
+    // Use MAPI — returns qrcode/img directly instead of page redirect
+    const body = new URLSearchParams({ ...params, sign, sign_type: "MD5", return_url });
+    const zpayRes = await fetch(`${domain}/mapi.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+
+    const zpayData = await zpayRes.json();
+    console.log("[zpay mapi]", zpayData);
+
+    if (zpayData.code !== 1) {
+      throw new Error(zpayData.msg || "Zpay创建订单失败");
+    }
+
+    return NextResponse.json({
+      qrImg: zpayData.img ?? null,       // direct QR image URL
+      qrCode: zpayData.qrcode ?? zpayData.payurl ?? null, // URL to generate QR from
+      out_trade_no,
+      amount: PRICE[tier],
+      tier,
+    });
   } catch (error) {
     console.error("create-order error:", error);
-    return NextResponse.json({ error: "创建订单失败" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "创建订单失败" },
+      { status: 500 }
+    );
   }
 }

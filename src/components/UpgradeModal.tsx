@@ -73,7 +73,8 @@ type PayState = "idle" | "loading" | "qr" | "polling" | "success" | "error";
 export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: UpgradeModalProps) {
   const [selected, setSelected] = useState<Tier>(defaultTier);
   const [payState, setPayState] = useState<PayState>("idle");
-  const [paymentUrl, setPaymentUrl] = useState("");
+  const [qrImg, setQrImg] = useState("");    // direct image URL from Zpay
+  const [qrCode, setQrCode] = useState("");  // URL to render QR from (fallback)
   const [outTradeNo, setOutTradeNo] = useState("");
   const [errMsg, setErrMsg] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -98,7 +99,8 @@ export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: 
   function resetPayState() {
     stopPolling();
     setPayState("idle");
-    setPaymentUrl("");
+    setQrImg("");
+    setQrCode("");
     setOutTradeNo("");
     setErrMsg("");
     pollCountRef.current = 0;
@@ -154,14 +156,14 @@ export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: 
         return;
       }
 
-      // Mock mode (虎皮椒 not configured) — fall back to manual QR
+      // Mock mode — Zpay not configured, show static manual QR
       if (data.mockMode) {
         setPayState("qr");
-        setPaymentUrl(""); // shows static QR
         return;
       }
 
-      setPaymentUrl(data.paymentUrl);
+      setQrImg(data.qrImg ?? "");
+      setQrCode(data.qrCode ?? "");
       setOutTradeNo(data.out_trade_no);
       setPayState("polling");
       startPolling(data.out_trade_no, selected);
@@ -181,7 +183,7 @@ export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: 
   if (!open) return null;
 
   const tier = TIERS[selected];
-  const isLive = !!paymentUrl; // true when Zpay returned a real URL
+  const hasLiveQr = !!(qrImg || qrCode);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-0 sm:px-4">
@@ -255,11 +257,11 @@ export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: 
               <p className="text-[10px] text-muted mb-3">暂只支持支付宝 · 微信支付即将上线</p>
 
               <div className="w-48 h-48 mx-auto mb-4 rounded-2xl overflow-hidden relative bg-white flex items-center justify-center">
-                {isLive ? (
+                {hasLiveQr ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={QR_API(paymentUrl)}
-                    alt="支付二维码"
+                    src={qrImg || QR_API(qrCode)}
+                    alt="支付宝二维码"
                     className="w-full h-full object-contain"
                   />
                 ) : (

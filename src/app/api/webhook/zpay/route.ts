@@ -9,17 +9,16 @@ function md5(str: string) {
 function verifySign(params: Record<string, string>, key: string): boolean {
   const expected = params["sign"];
   if (!expected) return false;
-
   const computed = Object.entries(params)
     .filter(([k, v]) => k !== "sign" && k !== "sign_type" && v !== "")
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${k}=${v}`)
     .join("&");
-
   return md5(computed + "&key=" + key) === expected;
 }
 
-export async function POST(request: NextRequest) {
+// Zpay sends async notifications via GET
+export async function GET(request: NextRequest) {
   try {
     const key = process.env.ZPAY_KEY;
     if (!key) {
@@ -27,13 +26,11 @@ export async function POST(request: NextRequest) {
       return new NextResponse("error", { status: 500 });
     }
 
-    const body = await request.text();
-    const params = Object.fromEntries(new URLSearchParams(body).entries());
-
+    const params = Object.fromEntries(request.nextUrl.searchParams.entries());
     console.log("[zpay webhook]", params);
 
     if (!verifySign(params, key)) {
-      console.error("[zpay] signature mismatch", params);
+      console.error("[zpay] signature mismatch");
       return new NextResponse("fail", { status: 400 });
     }
 
@@ -42,12 +39,19 @@ export async function POST(request: NextRequest) {
     }
 
     // param encodes userId:tier:out_trade_no
-    const param = params["param"] ?? "";
-    const [userId, tier, out_trade_no] = param.split(":");
-
+    const [userId, tier, out_trade_no] = (params["param"] ?? "").split(":");
     if (!userId || !tier || !["basic", "pro", "max"].includes(tier)) {
-      console.error("[zpay] invalid param:", param);
+      console.error("[zpay] invalid param:", params["param"]);
       return new NextResponse("fail", { status: 400 });
+    }
+
+    // Idempotent: check if already processed
+    const existing = await prisma.payment.findFirst({
+      where: { note: out_trade_no, status: "paid" },
+    });
+    if (existing) {
+      console.log("[zpay] already processed:", out_trade_no);
+      return new NextResponse("success");
     }
 
     await prisma.$transaction([
@@ -62,7 +66,6 @@ export async function POST(request: NextRequest) {
     ]);
 
     console.log(`[zpay] ✅ activated ${tier} for user ${userId}`);
-
     return new NextResponse("success");
   } catch (error) {
     console.error("[zpay webhook error]", error);
