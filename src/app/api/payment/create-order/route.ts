@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "无效套餐" }, { status: 400 });
     }
 
-    // Must be logged in
     const cookieStore = await cookies();
     const token = cookieStore.get("aps_token")?.value;
     const payload = token ? await verifyToken(token) : null;
@@ -35,19 +34,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 });
     }
 
-    const pid = process.env.HUPIJIAO_PID;
-    const key = process.env.HUPIJIAO_KEY;
-    const domain = process.env.HUPIJIAO_DOMAIN; // e.g. https://pay.example.com
+    const pid = process.env.ZPAY_PID;
+    const key = process.env.ZPAY_KEY;
+    const domain = process.env.ZPAY_DOMAIN; // e.g. https://zpay.example.com
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
-    // If 虎皮椒 not configured, return mock mode
     if (!pid || !key || !domain) {
       return NextResponse.json({ mockMode: true, tier });
     }
 
     const out_trade_no = `aps_${Date.now()}_${randomBytes(4).toString("hex")}`;
 
-    // Create pending payment record
     await prisma.payment.create({
       data: {
         userId: payload.userId,
@@ -58,14 +55,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const notify_url = `${baseUrl}/api/webhook/hupijiao`;
+    const notify_url = `${baseUrl}/api/webhook/zpay`;
     const return_url = `${baseUrl}/dashboard`;
-    // Embed userId and tier in param so webhook can identify user
     const param = `${payload.userId}:${tier}:${out_trade_no}`;
 
     const params: Record<string, string> = {
       pid,
-      type: "wxpay",
+      type: "alipay",
       out_trade_no,
       notify_url,
       return_url,

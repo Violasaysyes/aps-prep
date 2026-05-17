@@ -181,7 +181,7 @@ export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: 
   if (!open) return null;
 
   const tier = TIERS[selected];
-  const isLive = payState === "qr" && paymentUrl;
+  const isLive = !!paymentUrl; // true when Zpay returned a real URL
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-0 sm:px-4">
