@@ -3,53 +3,60 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File;
+    const file = formData.get("file") as File | null;
+    const rawText = (formData.get("rawText") as string | null)?.trim();
     const major = formData.get("major") as string;
     const university = formData.get("university") as string;
     const examLang = formData.get("examLang") as string;
 
-    if (!file) {
-      return NextResponse.json(
-        { error: "请上传成绩单" },
-        { status: 400 }
-      );
-    }
     const majorLabel = major || "未知专业";
-
-    const buffer = Buffer.from(await file.arrayBuffer());
     let textContent = "";
 
-    const fileName = file.name.toLowerCase();
-    if (fileName.endsWith(".pdf")) {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const pdfParse = require("pdf-parse");
-        const data = await pdfParse(buffer);
-        textContent = data.text;
-      } catch (e) {
-        console.error("PDF parse error:", e);
-        throw new Error(`PDF解析失败: ${e instanceof Error ? e.message : String(e)}`);
+    // Path A: user pasted text directly
+    if (rawText && rawText.length > 20) {
+      textContent = rawText;
+    } else if (file) {
+      // Path B: parse uploaded file
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const fileName = file.name.toLowerCase();
+
+      if (fileName.endsWith(".pdf")) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          const pdfParse = require("pdf-parse");
+          const data = await pdfParse(buffer);
+          textContent = data.text ?? "";
+          console.log(`[pdf-parse] pages=${data.numpages} chars=${textContent.length}`);
+        } catch (e) {
+          console.error("PDF parse error:", e);
+          throw new Error(`PDF解析失败: ${e instanceof Error ? e.message : String(e)}`);
+        }
+      } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
+          const mammoth = require("mammoth");
+          const result = await mammoth.extractRawText({ buffer });
+          textContent = result.value ?? "";
+        } catch (e) {
+          console.error("Word parse error:", e);
+          throw new Error(`Word解析失败: ${e instanceof Error ? e.message : String(e)}`);
+        }
+      } else {
+        return NextResponse.json(
+          { error: "不支持的文件格式，请上传PDF或Word文件" },
+          { status: 400 }
+        );
       }
-    } else if (fileName.endsWith(".docx") || fileName.endsWith(".doc")) {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const mammoth = require("mammoth");
-        const result = await mammoth.extractRawText({ buffer });
-        textContent = result.value;
-      } catch (e) {
-        console.error("Word parse error:", e);
-        throw new Error(`Word解析失败: ${e instanceof Error ? e.message : String(e)}`);
+
+      if (!textContent.trim()) {
+        return NextResponse.json(
+          { error: "PDF无法提取文字——可能是扫描件或字体编码问题。请改用「粘贴文字」模式：在学校教务系统中选中成绩单文字，复制后粘贴到文本框即可。" },
+          { status: 400 }
+        );
       }
     } else {
       return NextResponse.json(
-        { error: "不支持的文件格式，请上传PDF或Word文件" },
-        { status: 400 }
-      );
-    }
-
-    if (!textContent.trim()) {
-      return NextResponse.json(
-        { error: "无法解析文件���容，请确认文件不是扫描件" },
+        { error: "请上传成绩单文件，或粘贴成绩单文字内容" },
         { status: 400 }
       );
     }

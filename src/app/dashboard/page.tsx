@@ -269,6 +269,9 @@ export default function DashboardPage() {
   const [earnedAchievements, setEarnedAchievements] = useState<Set<string>>(new Set());
   const [todayCompleted, setTodayCompleted] = useState(0);
 
+  const [pasteMode, setPasteMode] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+
   const [tier, setTier] = useState<Tier | "none">("none");
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [upgradeTier, setUpgradeTier] = useState<Tier>("pro");
@@ -400,12 +403,18 @@ export default function DashboardPage() {
   };
 
   const handleAnalyze = async () => {
-    if (!file) { setError("请先上传成绩单"); return; }
+    if (pasteMode && !pasteText.trim()) { setError("请粘贴成绩单文字内容"); return; }
+    if (!pasteMode && !file) { setError("请先上传成绩单"); return; }
     setLoading(true);
     setError("");
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      if (pasteMode) {
+        formData.append("rawText", pasteText);
+        // pass a dummy file name so backend knows we're in paste mode
+      } else {
+        formData.append("file", file!);
+      }
       formData.append("major", major);
       formData.append("university", university);
       formData.append("examLang", examLang);
@@ -647,20 +656,51 @@ export default function DashboardPage() {
             )}
           </div>
           <div className="px-7 pb-7">
-            <label htmlFor="transcript-upload" className="cursor-pointer block mb-4">
-              <div className={`border-2 border-dashed rounded-2xl p-8 text-center transition
-                ${file ? "border-success bg-success-light/50" : "border-border hover:border-foreground/40 hover:bg-border/20"}`}>
-                <div className={`w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center text-xl font-black
-                  ${file ? "bg-success/20 text-success" : "bg-border text-muted"}`}>
-                  {file ? "✓" : "↑"}
-                </div>
-                <p className="text-sm font-bold mb-1">
-                  {file ? file.name : "点击上传成绩单"}
-                </p>
-                <p className="text-xs text-muted">支持 PDF、Word（来自教务系统）</p>
+            {/* Mode toggle */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => { setPasteMode(false); setError(""); }}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition ${!pasteMode ? "bg-foreground text-background" : "bg-border/50 text-muted hover:bg-border"}`}
+              >
+                ↑ 上传文件
+              </button>
+              <button
+                onClick={() => { setPasteMode(true); setError(""); }}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition ${pasteMode ? "bg-foreground text-background" : "bg-border/50 text-muted hover:bg-border"}`}
+              >
+                ✎ 粘贴文字
+              </button>
+            </div>
+
+            {!pasteMode ? (
+              <>
+                <label htmlFor="transcript-upload" className="cursor-pointer block mb-4">
+                  <div className={`border-2 border-dashed rounded-2xl p-8 text-center transition
+                    ${file ? "border-success bg-success-light/50" : "border-border hover:border-foreground/40 hover:bg-border/20"}`}>
+                    <div className={`w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center text-xl font-black
+                      ${file ? "bg-success/20 text-success" : "bg-border text-muted"}`}>
+                      {file ? "✓" : "↑"}
+                    </div>
+                    <p className="text-sm font-bold mb-1">
+                      {file ? file.name : "点击上传成绩单"}
+                    </p>
+                    <p className="text-xs text-muted">支持 PDF、Word（来自教务系统）</p>
+                  </div>
+                </label>
+                <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} className="hidden" id="transcript-upload" />
+              </>
+            ) : (
+              <div className="mb-4">
+                <textarea
+                  value={pasteText}
+                  onChange={(e) => setPasteText(e.target.value)}
+                  placeholder={"在教务系统打开成绩单页面，全选文字（Ctrl+A）后复制，粘贴到这里。\n\n格式不重要，AI会自动识别课程名、成绩、学期。"}
+                  rows={10}
+                  className="w-full border-2 border-border rounded-2xl px-4 py-3 text-sm bg-background focus:outline-none focus:border-foreground transition resize-none placeholder:text-muted/60 leading-relaxed"
+                />
+                <p className="text-xs text-muted mt-2">💡 在教务系统网页版上 Ctrl+A 全选再复制效果最好，不需要格式整齐</p>
               </div>
-            </label>
-            <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} className="hidden" id="transcript-upload" />
+            )}
 
             {/* Tier notice */}
             {!isBasic && (
@@ -697,7 +737,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3 flex-wrap">
               <button
                 onClick={handleAnalyze}
-                disabled={loading || !file}
+                disabled={loading || (pasteMode ? !pasteText.trim() : !file)}
                 className="bg-foreground text-background px-6 py-3 rounded-2xl text-sm font-bold hover:opacity-90 transition disabled:opacity-40 active:scale-95"
               >
                 {loading ? (
