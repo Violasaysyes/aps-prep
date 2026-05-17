@@ -289,14 +289,14 @@ export function SwipeCard({ course, onSwipe, isTop, tier = "none", onUpgrade }: 
             <div className="space-y-3">
               <p className="text-[10px] font-bold text-muted uppercase tracking-widest">考官可能会问</p>
               {course.questions.map((q, i) => (
-                <div key={i} className="bg-white/70 backdrop-blur-sm rounded-2xl px-4 py-3 space-y-2">
-                  <p className="text-[13px] font-semibold leading-snug">{q}</p>
-                  <div className="border-t border-border/40 pt-2">
-                    <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-1">参考回答</p>
+                <div key={i} className="bg-white/70 backdrop-blur-sm rounded-2xl px-4 py-4 space-y-3">
+                  <p className="text-[15px] font-bold leading-snug">{q}</p>
+                  <div className="border-t border-border/40 pt-3">
+                    <p className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2">参考回答</p>
                     <EditableField
                       value={editedAnswers[i] ?? ""}
                       onSave={(v) => saveAnswer(i, v)}
-                      className="text-[13px] text-muted leading-relaxed"
+                      className="text-[15px] text-foreground/80 leading-relaxed"
                       context={`${course.nameEn} (${course.name}) — Question: "${q}"`}
                       type="answer"
                     />
