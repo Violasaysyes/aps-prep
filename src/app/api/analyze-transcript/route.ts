@@ -63,7 +63,10 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
-      return NextResponse.json(generateFallbackAnalysis(textContent, majorLabel));
+      return NextResponse.json(
+        { error: "AI服务未配置，请联系管理员（缺少DEEPSEEK_API_KEY）" },
+        { status: 500 }
+      );
     }
 
     const prompt = `你是一位资深APS（德国留学审核）面试辅导专家。请分析以下学生的成绩单，提取课程信息并评估APS面试风险。
@@ -142,31 +145,39 @@ ${textContent.substring(0, 7000)}
     });
 
     if (!response.ok) {
-      throw new Error("AI API request failed");
+      const errBody = await response.text().catch(() => "");
+      console.error("[deepseek] API error", response.status, errBody);
+      throw new Error(`AI API错误 ${response.status}：${errBody.slice(0, 200)}`);
     }
 
     const data = await response.json();
     const content = data.choices[0]?.message?.content || "";
+    console.log(`[deepseek] response length=${content.length}`);
 
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error("No JSON in AI response, using fallback");
-      return NextResponse.json(generateFallbackAnalysis(textContent, majorLabel));
+      console.error("[deepseek] no JSON block in response:", content.slice(0, 300));
+      return NextResponse.json(
+        { error: "AI返回格式异常，请重试。如持续失败请检查成绩单文字是否完整。" },
+        { status: 500 }
+      );
     }
 
     let analysis;
     try {
       analysis = JSON.parse(jsonMatch[0]);
     } catch {
-      // JSON truncated or malformed — try trimming to last valid closing bracket
       const raw = jsonMatch[0];
       const lastBrace = raw.lastIndexOf("}");
       const trimmed = raw.substring(0, lastBrace + 1);
       try {
         analysis = JSON.parse(trimmed);
       } catch {
-        console.error("JSON parse failed even after trim, using fallback");
-        return NextResponse.json(generateFallbackAnalysis(textContent, majorLabel));
+        console.error("[deepseek] JSON parse failed, raw length:", raw.length);
+        return NextResponse.json(
+          { error: "AI返回内容过长被截断，请减少粘贴的文字量（保留课程表部分即可）后重试。" },
+          { status: 500 }
+        );
       }
     }
     return NextResponse.json(analysis);

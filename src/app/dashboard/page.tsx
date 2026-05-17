@@ -279,12 +279,23 @@ export default function DashboardPage() {
   const isBasic = tier !== "none";
   const isPro = tier === "pro" || tier === "max";
 
-  // Persist tier across page reloads
+  // Sync tier: localStorage first (instant), then override with server truth
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("aps_tier") as Tier | null;
-      if (saved) setTier(saved);
-    }
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("aps_tier") as Tier | null;
+    if (saved) setTier(saved);
+
+    // Always fetch server tier — catches admin upgrades and payment callbacks
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        const serverTier = data?.user?.tier as Tier | "none" | undefined;
+        if (serverTier && serverTier !== "none") {
+          setTier(serverTier);
+          localStorage.setItem("aps_tier", serverTier);
+        }
+      })
+      .catch(() => { /* network error, use cached value */ });
   }, []);
 
   // Load session data on mount
