@@ -22,13 +22,10 @@ export async function POST(request: NextRequest) {
     const fileName = file.name.toLowerCase();
     if (fileName.endsWith(".pdf")) {
       try {
-        // pdf-parse v2: class-based API
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { PDFParse } = require("pdf-parse");
-        const parser = new PDFParse({ data: buffer });
-        const result = await parser.getText();
-        textContent = result.text;
-        await parser.destroy();
+        const pdfParse = require("pdf-parse");
+        const data = await pdfParse(buffer);
+        textContent = data.text;
       } catch (e) {
         console.error("PDF parse error:", e);
         throw new Error(`PDF解析失败: ${e instanceof Error ? e.message : String(e)}`);
