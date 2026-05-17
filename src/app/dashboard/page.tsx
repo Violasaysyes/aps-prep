@@ -657,9 +657,9 @@ export default function DashboardPage() {
               </button>
               <button
                 onClick={handleLoadSample}
-                className="text-sm text-muted font-medium hover:text-foreground transition underline underline-offset-4 decoration-dotted"
+                className="px-6 py-3 rounded-2xl text-sm font-bold border-2 border-border hover:border-foreground/40 transition text-muted hover:text-foreground active:scale-95"
               >
-                或体验示例成绩单
+                跳过，先看看效果 →
               </button>
             </div>
           </div>
