@@ -114,7 +114,7 @@ ${textContent.substring(0, 4000)}
         model: "deepseek-chat",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.3,
-        max_tokens: 4000,
+        max_tokens: 8000,
       }),
     });
 
@@ -127,10 +127,25 @@ ${textContent.substring(0, 4000)}
 
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error("Failed to parse AI response");
+      console.error("No JSON in AI response, using fallback");
+      return NextResponse.json(generateFallbackAnalysis(textContent, majorLabel));
     }
 
-    const analysis = JSON.parse(jsonMatch[0]);
+    let analysis;
+    try {
+      analysis = JSON.parse(jsonMatch[0]);
+    } catch {
+      // JSON truncated or malformed — try trimming to last valid closing bracket
+      const raw = jsonMatch[0];
+      const lastBrace = raw.lastIndexOf("}");
+      const trimmed = raw.substring(0, lastBrace + 1);
+      try {
+        analysis = JSON.parse(trimmed);
+      } catch {
+        console.error("JSON parse failed even after trim, using fallback");
+        return NextResponse.json(generateFallbackAnalysis(textContent, majorLabel));
+      }
+    }
     return NextResponse.json(analysis);
   } catch (error) {
     console.error("Analyze transcript error:", error);
