@@ -284,6 +284,34 @@ export default function DashboardPage() {
     }
   }, []);
 
+  // Load session data on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem("aps_session");
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.major) setMajor(d.major);
+      if (d.university) setUniversity(d.university);
+      if (d.examLang) setExamLang(d.examLang);
+      if (d.intro) setIntro(d.intro);
+      if (d.introForm) setIntroForm(d.introForm);
+      if (d.analysis) { setAnalysis(d.analysis); setActiveSemester(d.activeSemester ?? 0); }
+      if (d.completedCourses) setCompletedCourses(new Set(d.completedCourses));
+    } catch { /* ignore corrupted data */ }
+  }, []);
+
+  // Save session data whenever key state changes
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const data = {
+      major, university, examLang, intro, introForm, analysis,
+      activeSemester,
+      completedCourses: Array.from(completedCourses),
+    };
+    localStorage.setItem("aps_session", JSON.stringify(data));
+  }, [major, university, examLang, intro, introForm, analysis, activeSemester, completedCourses]);
+
   const activateTier = useCallback((t: Tier) => {
     setTier(t);
     if (typeof window !== "undefined") localStorage.setItem("aps_tier", t);
