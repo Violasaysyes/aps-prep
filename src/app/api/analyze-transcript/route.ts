@@ -120,7 +120,7 @@ ${textContent.substring(0, 7000)}
           "credits": 3,
           "risk": "high",
           "reason": "该课程被判定为高风险的具体原因（1-2句中文）",
-          "summary": "A 90-110 word English overview of what was studied in this course: key topics, core theories/methods, and how it was assessed. Detailed enough for the student to recite confidently to the examiner.",
+          "summary": "A 180-220 word English course description covering: (1) the core subject matter and theoretical frameworks studied, (2) the 4-6 most important specific topics, concepts, or techniques covered (be concrete — name actual theories, algorithms, methods, or authors), (3) how the course was assessed (exam format, labs, projects, thesis, presentations), and (4) one sentence on how this course connects to the student's broader major. Written in first person, natural spoken register, detailed enough for the student to recite fluently when the examiner asks 'Tell me about this course.'",
           "questions": ["考官可能的提问1（中文）", "提问2", "提问3"],
           "answers": ["问题1的英文参考回答（3-4句，具体可背诵）", "问题2的英文回答", "问题3的英文回答"]
         }
