@@ -249,9 +249,10 @@ export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: 
 
           {(payState === "qr" || payState === "polling") && (
             <div className="bg-card border-2 border-border rounded-2xl p-5 text-center">
-              <p className="text-[11px] font-bold text-muted uppercase tracking-widest mb-4">
-                微信扫码付款
+              <p className="text-[11px] font-bold text-muted uppercase tracking-widest mb-3">
+                支付宝扫码付款
               </p>
+              <p className="text-[10px] text-muted mb-3">暂只支持支付宝 · 微信支付即将上线</p>
 
               <div className="w-48 h-48 mx-auto mb-4 rounded-2xl overflow-hidden relative bg-white flex items-center justify-center">
                 {isLive ? (
