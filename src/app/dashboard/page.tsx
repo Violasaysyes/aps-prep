@@ -474,7 +474,7 @@ export default function DashboardPage() {
               ${step1Done ? "bg-success text-white" : "bg-foreground text-background"}`}>
               {step1Done ? "✓" : "01"}
             </div>
-            <h2 className="text-lg font-bold">选择专业和院校</h2>
+            <h2 className="text-lg font-bold">选择申请方向的专业和院校</h2>
           </div>
           <div className="px-7 pb-7 grid sm:grid-cols-3 gap-4">
             <div>
@@ -585,14 +585,22 @@ export default function DashboardPage() {
 
         {/* ─── Step 3: 上传成绩单 ─── */}
         <section className="mb-5 bg-card rounded-3xl border-2 border-border overflow-hidden">
-          <div className="flex items-center gap-3 px-7 pt-7 pb-5">
-            <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-xs font-black
-              ${step3Done ? "bg-success text-white" : "bg-foreground text-background"}`}>
-              {step3Done ? "✓" : "03"}
-            </div>
-            <div>
+          <div className="flex items-center justify-between px-7 pt-7 pb-5">
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-xs font-black
+                ${step3Done ? "bg-success text-white" : "bg-foreground text-background"}`}>
+                {step3Done ? "✓" : "03"}
+              </div>
               <h2 className="text-lg font-bold leading-tight">上传成绩单</h2>
             </div>
+            {!analysis && (
+              <button
+                onClick={handleLoadSample}
+                className="text-xs text-muted font-medium hover:text-foreground transition border border-border rounded-full px-3 py-1.5 hover:border-foreground/40"
+              >
+                跳过，稍后再来 →
+              </button>
+            )}
           </div>
           <div className="px-7 pb-7">
             <label htmlFor="transcript-upload" className="cursor-pointer block mb-4">
@@ -659,7 +667,7 @@ export default function DashboardPage() {
                 onClick={handleLoadSample}
                 className="px-6 py-3 rounded-2xl text-sm font-bold border-2 border-border hover:border-foreground/40 transition text-muted hover:text-foreground active:scale-95"
               >
-                跳过，先看看效果 →
+                跳过，稍后再来 →
               </button>
             </div>
           </div>
@@ -679,7 +687,7 @@ export default function DashboardPage() {
                   <p className="text-background/50 text-sm pl-12">
                     {completedCount === totalCourses && totalCourses > 0
                       ? "全部搞定！考官请注意 →"
-                      : `还剩 ${totalCourses - completedCount} 门课`}
+                      : `还剩 ${totalCourses - completedCount} 门课 · 往上滚可选专业/上传成绩单`}
                   </p>
                 </div>
                 <div className="text-right">
