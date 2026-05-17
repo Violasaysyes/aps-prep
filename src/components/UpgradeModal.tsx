@@ -256,7 +256,6 @@ export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: 
 
               <div className="w-48 h-48 mx-auto mb-4 rounded-2xl overflow-hidden relative bg-white flex items-center justify-center">
                 {isLive ? (
-                  /* Live QR from 虎皮椒 payment URL */
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={QR_API(paymentUrl)}
@@ -264,8 +263,7 @@ export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: 
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  /* Static WeChat collection QR (mock mode) */
-                  <Image src="/wechat-pay-qr.jpg" alt="微信收款码" fill className="object-contain" unoptimized />
+                  <Image src="/alipay-qr.jpg" alt="支付宝收款码" fill className="object-contain" unoptimized />
                 )}
               </div>
 
@@ -277,7 +275,7 @@ export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: 
               ) : (
                 <div>
                   <p className="text-xs text-muted mb-1">
-                    付款 <strong className="text-foreground">¥{tier.price}</strong> 后截图发给微信
+                    扫码付款 <strong className="text-foreground">¥{tier.price}</strong>，截图发微信给我们
                   </p>
                   <p className="text-xs text-muted">备注：<strong className="text-foreground">{tier.name} + 邮箱</strong></p>
                 </div>
@@ -305,8 +303,8 @@ export function UpgradeModal({ open, onClose, onSuccess, defaultTier = "pro" }: 
             </div>
           )}
 
-          {/* Dev shortcut */}
-          {(payState === "idle" || payState === "qr" || payState === "polling") && (
+          {/* Dev shortcut — build-time stripped in production */}
+          {process.env.NODE_ENV !== "production" && (payState === "idle" || payState === "qr" || payState === "polling") && (
             <button
               onClick={devUnlock}
               className="w-full mt-3 border border-dashed border-border rounded-2xl py-3 text-xs text-muted hover:border-foreground/20 transition"
